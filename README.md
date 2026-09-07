@@ -94,7 +94,7 @@ behavior, a release-discovery source, and any special uninstall requirements.
 Separate Intel/Apple Silicon downloads need separate checksums. Bundle identifiers
 and confirmed data paths are needed for optional targeted cleanup.
 
-## Stockbit verification and reference evaluation
+## Stockbit verification
 
 Verified on 2026-09-07 against the
 [official download page](https://stockbit.com/desktop) and its
@@ -109,17 +109,6 @@ Verified on 2026-09-07 against the
   the vendor's published requirement, without claiming older macOS support.
 - Stockbit documents its built-in updater in its
   [software update instructions](https://help.stockbit.com/id/article/bagaimana-cara-lihat-dan-update-version-stockbit-app-terbaru-dopflr/).
-
-The [joglomedia reference cask](https://github.com/joglomedia/homebrew-brewery/blob/HEAD/Casks/stockbit.rb)
-was evaluated, with download metadata verified independently:
-
-- Its versioned URL, checksum and `auto_updates true` are appropriate.
-- Its `extract_plist` livecheck examines the already-pinned DMG and cannot discover
-  the next release. This tap checks the current vendor redirect instead.
-- `verified:` is unnecessary because the download host belongs to the homepage's
-  `stockbit.com` domain.
-- This tap adds the published macOS requirement and a concise description, and
-  omits unverified cleanup paths and unrelated formulae.
 
 The cask uses Homebrew's declarative DSL without custom installation scripts.
 See the [Homebrew Cask Cookbook](https://docs.brew.sh/Cask-Cookbook) for the format.
