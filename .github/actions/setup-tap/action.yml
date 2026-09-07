@@ -1,0 +1,13 @@
+name: Register local tap
+description: Register and trust the checked-out repository in Homebrew
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      run: |
+        tap_dir="$(brew --repository)/Library/Taps/cravingmaker/homebrew-tap"
+        mkdir -p "$(dirname "$tap_dir")"
+        ln -s "$GITHUB_WORKSPACE" "$tap_dir"
+        if brew command trust >/dev/null 2>&1; then
+          brew trust --tap cravingmaker/tap
+        fi

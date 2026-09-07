@@ -94,9 +94,9 @@ brew livecheck --cask cravingmaker/tap/stockbit
 ```
 
 Livecheck reads the official download redirect, so it can discover a release
-beyond the pinned version without extracting a DMG. It reports versions; it does
-not edit the cask or create update PRs. Installed apps can still update themselves
-between tap updates.
+beyond the pinned version without extracting a DMG. The command itself only
+reports versions; the daily update workflow uses its result to prepare an update
+PR. Installed apps can still update themselves between tap updates.
 
 When a new release appears, download its versioned DMG from the vendor, calculate
 `shasum -a 256 /path/to/Stockbit.dmg`, and update `version` and `sha256` together.
@@ -105,12 +105,51 @@ committing. Do not replace the checksum with `:no_check` for a versioned downloa
 
 ```sh
 brew style cravingmaker/tap
-brew audit --cask --strict --online --tap cravingmaker/tap
+brew audit --cask --strict --online --except=livecheck_version --tap cravingmaker/tap
+brew livecheck --cask --tap cravingmaker/tap
 ```
 
-GitHub Actions runs those checks on pushes and pull requests. Online audits
-download and inspect installers and check livecheck; vendor outages or a newly
-released version can cause an audit failure. CI does not launch the application.
+GitHub Actions runs these checks on pushes and pull requests. Online audits
+download and inspect installers. Livecheck reports upstream versions separately:
+a newer version is informational, while an actual download, audit or livecheck
+error fails the run. CI does not launch the application.
+
+## Automation
+
+| Workflow | When | Behavior |
+| --- | --- | --- |
+| Validate casks | Push to `main`, pull request, or manual run | Tests update selection, checks style, audits installers, and reports livecheck results |
+| Update casks | Daily at 08:17 Asia/Jakarta, or manual run on `main` | Checks Stockbit; updates its version and SHA-256 and opens or updates a PR when a newer release exists |
+| Weekly installation test | Monday at 09:43 Asia/Jakarta, or manual run on `main` | Installs and uninstalls Stockbit only if `main` has commits in the preceding seven days |
+
+GitHub schedules use UTC and may start later when runners are busy. The weekly
+workflow first runs a small Linux job to query commits reachable from the run's
+`main` revision. Any commit counts, including documentation changes and merged
+update PRs. If there are none in the preceding seven days, the macOS job is
+skipped. Manual runs use the same activity condition. Commits only on unmerged
+branches do not count. The installation test checks that the app bundle and
+executable exist, uninstalls it, and verifies that the bundle is gone. It uses a
+temporary app directory on the runner and never launches Stockbit or uses `--zap`.
+
+The daily updater currently handles Stockbit's numeric stable versions. It uses
+`brew bump-cask-pr --write-only` to download the new installer and calculate its
+checksum. Style and online audit must pass before it publishes a PR on the
+reusable `automation/stockbit` branch. It never commits directly to `main` or
+merges automatically. A current version produces no changes or PR. Failed or
+unrecognized release results stop the workflow instead of guessing a version.
+
+The updater uses the repository's `GITHUB_TOKEN`; no personal token is needed.
+GitHub's **Settings → Actions → General → Allow GitHub Actions to create and
+approve pull requests** must be enabled. The updater requests write permissions
+only for contents, pull requests, and workflow dispatch. Other workflows are
+read-only. After opening or finding the update PR, it explicitly dispatches
+validation on that branch so bot-generated changes get a CI run. The validation
+run appears on the PR's head commit and in the Actions tab.
+
+Run any workflow manually from the repository's **Actions** tab. For local
+automation tests, use `python3 -m unittest discover -s tests`.
+
+## Adding another app
 
 For another app, an official download page or DMG URL is usually enough to begin.
 Each cask needs a version, SHA-256, name, short description, homepage, and exact

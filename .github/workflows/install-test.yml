@@ -1,0 +1,64 @@
+name: Weekly installation test
+
+on:
+  schedule:
+    - cron: "43 2 * * 1" # Mondays, 09:43 Asia/Jakarta
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: weekly-installation-test
+  cancel-in-progress: false
+
+jobs:
+  activity:
+    if: github.repository == 'cravingmaker/homebrew-tap' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      recent: ${{ steps.commits.outputs.recent }}
+    steps:
+      - name: Check for commits in the preceding seven days
+        id: commits
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          since="$(date -u -d '7 days ago' '+%Y-%m-%dT%H:%M:%SZ')"
+          recent="$(gh api --method GET "repos/$GITHUB_REPOSITORY/commits" \
+            -f sha="$GITHUB_SHA" -f since="$since" -f per_page=1 \
+            --jq 'length > 0')"
+          echo "recent=$recent" >> "$GITHUB_OUTPUT"
+          if [[ "$recent" == true ]]; then
+            echo 'Recent commits found on main; the macOS installation test will run.' >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo 'No commits on main in the preceding seven days; skipping the macOS installation test.' >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+  install:
+    needs: activity
+    if: needs.activity.outputs.recent == 'true'
+    runs-on: macos-latest
+    timeout-minutes: 20
+    env:
+      HOMEBREW_NO_ANALYTICS: "1"
+      HOMEBREW_NO_AUTO_UPDATE: "1"
+      HOMEBREW_NO_INSTALL_CLEANUP: "1"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-tap
+      - name: Install Stockbit
+        run: |
+          brew install --cask --appdir="$RUNNER_TEMP/stockbit-apps" cravingmaker/tap/stockbit
+          test -d "$RUNNER_TEMP/stockbit-apps/Stockbit.app"
+          test -x "$RUNNER_TEMP/stockbit-apps/Stockbit.app/Contents/MacOS/Stockbit"
+      - name: Uninstall Stockbit
+        if: ${{ always() }}
+        run: |
+          if brew list --cask stockbit >/dev/null 2>&1; then
+            brew uninstall --cask cravingmaker/tap/stockbit
+          fi
+          test ! -e "$RUNNER_TEMP/stockbit-apps/Stockbit.app"

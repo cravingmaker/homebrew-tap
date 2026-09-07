@@ -26,15 +26,14 @@ jobs:
         with:
           persist-credentials: false
       - name: Register checked-out tap
-        shell: bash
-        run: |
-          tap_dir="$(brew --repository)/Library/Taps/cravingmaker/homebrew-tap"
-          mkdir -p "$(dirname "$tap_dir")"
-          ln -s "$GITHUB_WORKSPACE" "$tap_dir"
-          if brew command trust >/dev/null 2>&1; then
-            brew trust --tap cravingmaker/tap
-          fi
+        id: setup
+        uses: ./.github/actions/setup-tap
+      - name: Test update selection
+        run: python3 -m unittest discover -s tests
       - name: Check style
         run: brew style cravingmaker/tap
       - name: Audit casks and verify downloads
-        run: brew audit --cask --strict --online --tap cravingmaker/tap
+        run: brew audit --cask --strict --online --except=livecheck_version --tap cravingmaker/tap
+      - name: Report upstream versions
+        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
+        run: brew livecheck --cask --tap cravingmaker/tap
