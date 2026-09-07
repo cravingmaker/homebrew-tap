@@ -73,6 +73,18 @@ These paths were verified on a Mac running Stockbit 2.2.0. Cleanup can reset loc
 settings and login state. It runs only when `--zap` is requested; normal uninstall
 and upgrades do not run it.
 
+If Stockbit was installed before this tap gained cleanup support, Homebrew's
+saved installation recipe has no `zap` stanza. When you want to remove that
+installation and its data, first uninstall normally, then apply the current
+recipe's cleanup to the now-uninstalled cask:
+
+```sh
+brew uninstall --cask cravingmaker/tap/stockbit
+brew uninstall --cask --zap --force cravingmaker/tap/stockbit
+```
+
+Here `--force` allows cleanup after the app has already been uninstalled.
+
 ## Maintain
 
 Check the vendor's current installer version:
