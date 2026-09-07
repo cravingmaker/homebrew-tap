@@ -63,8 +63,9 @@ verified data folders to the Trash, quit Stockbit and explicitly use `--zap`:
 brew uninstall --cask --zap cravingmaker/tap/stockbit
 ```
 
-This removes these folders from the current user's Library:
+This removes these folders from the current user's home directory:
 
+- `~/.stockbit`
 - `~/Library/Application Support/com.stockbit.desktop`
 - `~/Library/Caches/com.stockbit.desktop`
 - `~/Library/WebKit/com.stockbit.desktop`

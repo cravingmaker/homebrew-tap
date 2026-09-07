@@ -19,6 +19,7 @@ cask "stockbit" do
   app "Stockbit.app"
 
   zap trash: [
+    "~/.stockbit",
     "~/Library/Application Support/com.stockbit.desktop",
     "~/Library/Caches/com.stockbit.desktop",
     "~/Library/WebKit/com.stockbit.desktop",
