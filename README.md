@@ -56,9 +56,22 @@ Remove the application with:
 brew uninstall --cask cravingmaker/tap/stockbit
 ```
 
-User settings and data are retained. This cask intentionally has no `zap` stanza
-until Stockbit's data directories have been verified; it does not claim to remove
-all app data.
+Ordinary uninstall retains user settings and data. To also move Stockbit's
+verified data folders to the Trash, quit Stockbit and explicitly use `--zap`:
+
+```sh
+brew uninstall --cask --zap cravingmaker/tap/stockbit
+```
+
+This removes these folders from the current user's Library:
+
+- `~/Library/Application Support/com.stockbit.desktop`
+- `~/Library/Caches/com.stockbit.desktop`
+- `~/Library/WebKit/com.stockbit.desktop`
+
+These paths were verified on a Mac running Stockbit 2.2.0. Cleanup can reset local
+settings and login state. It runs only when `--zap` is requested; normal uninstall
+and upgrades do not run it.
 
 ## Maintain
 

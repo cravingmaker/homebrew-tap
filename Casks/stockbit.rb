@@ -17,4 +17,10 @@ cask "stockbit" do
   depends_on macos: :monterey
 
   app "Stockbit.app"
+
+  zap trash: [
+    "~/Library/Application Support/com.stockbit.desktop",
+    "~/Library/Caches/com.stockbit.desktop",
+    "~/Library/WebKit/com.stockbit.desktop",
+  ]
 end
