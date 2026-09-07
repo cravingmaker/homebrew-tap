@@ -2,7 +2,7 @@ name: Weekly installation test
 
 on:
   schedule:
-    - cron: "43 2 * * 1" # Mondays, 09:43 Asia/Jakarta
+    - cron: "0 23 * * 0" # Mondays, 06:00 Asia/Jakarta (Sunday UTC)
   workflow_dispatch:
 
 permissions:

@@ -2,7 +2,7 @@ name: Update casks
 
 on:
   schedule:
-    - cron: "17 1 * * *" # Daily, 08:17 Asia/Jakarta
+    - cron: "0 20 * * *" # Daily, 03:00 Asia/Jakarta (previous day UTC)
   workflow_dispatch:
 
 permissions:

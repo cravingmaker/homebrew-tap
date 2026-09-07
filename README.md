@@ -119,8 +119,8 @@ error fails the run. CI does not launch the application.
 | Workflow | When | Behavior |
 | --- | --- | --- |
 | Validate casks | Push to `main`, pull request, or manual run | Tests update selection, checks style, audits installers, and reports livecheck results |
-| Update casks | Daily at 08:17 Asia/Jakarta, or manual run on `main` | Checks Stockbit; updates its version and SHA-256 and opens or updates a PR when a newer release exists |
-| Weekly installation test | Monday at 09:43 Asia/Jakarta, or manual run on `main` | Installs and uninstalls Stockbit only if `main` has commits in the preceding seven days |
+| Update casks | Daily at 03:00 Asia/Jakarta, or manual run on `main` | Checks Stockbit; updates its version and SHA-256 and opens or updates a PR when a newer release exists |
+| Weekly installation test | Monday at 06:00 Asia/Jakarta, or manual run on `main` | Installs and uninstalls Stockbit only if `main` has commits in the preceding seven days |
 
 GitHub schedules use UTC and may start later when runners are busy. The weekly
 workflow first runs a small Linux job to query commits reachable from the run's
