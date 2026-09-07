@@ -1,0 +1,40 @@
+name: Validate casks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: macos-latest
+    timeout-minutes: 15
+    env:
+      HOMEBREW_NO_ANALYTICS: "1"
+      HOMEBREW_NO_AUTO_UPDATE: "1"
+      HOMEBREW_NO_INSTALL_CLEANUP: "1"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Register checked-out tap
+        shell: bash
+        run: |
+          tap_dir="$(brew --repository)/Library/Taps/cravingmaker/homebrew-tap"
+          mkdir -p "$(dirname "$tap_dir")"
+          ln -s "$GITHUB_WORKSPACE" "$tap_dir"
+          if brew command trust >/dev/null 2>&1; then
+            brew trust --tap cravingmaker/tap
+          fi
+      - name: Check style
+        run: brew style cravingmaker/tap
+      - name: Audit casks and verify downloads
+        run: brew audit --cask --strict --online --tap cravingmaker/tap
