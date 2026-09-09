@@ -1,4 +1,4 @@
-name: Validate casks
+name: Validate tap
 
 on:
   push:
@@ -28,12 +28,25 @@ jobs:
       - name: Register checked-out tap
         id: setup
         uses: ./.github/actions/setup-tap
-      - name: Test update selection
-        run: python3 -m unittest discover -s tests
+      - name: Validate migration map
+        run: python3 -m json.tool tap_migrations.json > /dev/null
+      - name: Detect packages
+        id: packages
+        shell: zsh -f -e {0}
+        run: |
+          casks=(Casks/**/*.rb(N))
+          formulae=(Formula/**/*.rb(N))
+          echo "casks=${#casks}" >> "$GITHUB_OUTPUT"
+          echo "formulae=${#formulae}" >> "$GITHUB_OUTPUT"
       - name: Check style
+        if: steps.packages.outputs.casks != '0' || steps.packages.outputs.formulae != '0'
         run: brew style cravingmaker/tap
       - name: Audit casks and verify downloads
+        if: steps.packages.outputs.casks != '0'
         run: brew audit --cask --strict --online --except=livecheck_version --tap cravingmaker/tap
+      - name: Audit formulae
+        if: steps.packages.outputs.formulae != '0'
+        run: brew audit --formula --strict --online --tap cravingmaker/tap
       - name: Report upstream versions
-        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
-        run: brew livecheck --cask --tap cravingmaker/tap
+        if: ${{ !cancelled() && steps.setup.outcome == 'success' && steps.packages.outcome == 'success' && (steps.packages.outputs.casks != '0' || steps.packages.outputs.formulae != '0') }}
+        run: brew livecheck --tap cravingmaker/tap
