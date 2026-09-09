@@ -1,7 +1,7 @@
 # cravingmaker/tap
 
-Personal Homebrew tap for casks and formulae. No packages are currently hosted here;
-the tap remains available for future additions.
+Personal Homebrew tap for casks and formulae. Installers come directly from their
+vendors.
 
 ## Setup
 
@@ -9,6 +9,30 @@ the tap remains available for future additions.
 brew tap cravingmaker/tap
 brew trust --tap cravingmaker/tap
 ```
+
+## Ajaib Terminal
+
+```sh
+brew install --cask cravingmaker/tap/ajaib-terminal
+```
+
+[Ajaib Terminal](https://ajaib.co.id/terminal) requires macOS 12 Monterey or later
+and supports Intel and Apple Silicon. The cask downloads a versioned archive from
+the app's official update service and verifies its SHA-256. Its app bundle is
+identical to the official DMG's bundle for version 1.8.2.
+
+The app has a built-in updater. To check the latest vendor release with Homebrew:
+
+```sh
+brew livecheck --cask cravingmaker/tap/ajaib-terminal
+```
+
+Livecheck reports new versions; it does not update the cask automatically.
+Homebrew skips self-updating apps during ordinary upgrades; use
+`brew upgrade --cask --greedy cravingmaker/tap/ajaib-terminal` to include this app.
+
+Uninstall with `brew uninstall --cask cravingmaker/tap/ajaib-terminal`.
+No `zap` paths are defined yet; local settings and data are retained.
 
 ## Stockbit
 
@@ -26,6 +50,7 @@ For a Brewfile:
 
 ```ruby
 tap "cravingmaker/tap"
+cask "cravingmaker/tap/ajaib-terminal"
 cask "stockbit"
 ```
 
