@@ -1,0 +1,73 @@
+name: Update casks
+
+on:
+  schedule:
+    - cron: "0 20 * * *" # Daily, 03:00 Asia/Jakarta (previous day UTC)
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  update:
+    if: github.repository == 'cravingmaker/homebrew-tap' && github.ref == 'refs/heads/main'
+    runs-on: macos-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        cask: [ajaib-terminal]
+    concurrency:
+      group: update-casks-${{ matrix.cask }}
+      cancel-in-progress: false
+    permissions:
+      contents: write
+      pull-requests: write
+      actions: write
+    env:
+      HOMEBREW_NO_ANALYTICS: "1"
+      HOMEBREW_NO_AUTO_UPDATE: "1"
+      HOMEBREW_NO_INSTALL_CLEANUP: "1"
+      CASK: ${{ matrix.cask }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          persist-credentials: false
+      - uses: ./.github/actions/setup-tap
+      - name: Discover release and update version and checksum
+        id: update
+        run: python3 scripts/update_cask.py "$CASK"
+      - name: Validate update
+        if: steps.update.outputs.updated == 'true'
+        run: |
+          brew style cravingmaker/tap
+          brew audit --cask --strict --online --except=livecheck_version,livecheck_https_availability "cravingmaker/tap/$CASK"
+      - name: Create or update release PR
+        if: steps.update.outputs.updated == 'true'
+        id: pr
+        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
+        with:
+          branch: automation/${{ matrix.cask }}
+          base: main
+          add-paths: Casks/${{ matrix.cask }}.rb
+          author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
+          commit-message: "chore(${{ matrix.cask }}): update to ${{ steps.update.outputs.version }}"
+          title: "chore(${{ matrix.cask }}): update to ${{ steps.update.outputs.version }}"
+          body: |
+            Update `${{ matrix.cask }}` to ${{ steps.update.outputs.version }}.
+
+            Homebrew livecheck discovered this release through the vendor's official
+            update endpoint. Homebrew's bump tooling downloaded the versioned
+            archive and recalculated its SHA-256.
+
+            Validation passed: `brew style` and the strict online cask audit
+            (version freshness is reported separately). The PR awaits manual review
+            and merge. This update does not install or launch the app.
+      # Pull requests created with GITHUB_TOKEN don't trigger workflows, so start CI explicitly.
+      - name: Dispatch CI for the update branch
+        if: steps.pr.outputs.pull-request-number != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          UPDATE_BRANCH: ${{ steps.pr.outputs.pull-request-branch }}
+        run: gh workflow run ci.yml --repo "$GITHUB_REPOSITORY" --ref "$UPDATE_BRANCH"

@@ -41,9 +41,12 @@ jobs:
       - name: Check style
         if: steps.packages.outputs.casks != '0' || steps.packages.outputs.formulae != '0'
         run: brew style cravingmaker/tap
+      # Version drift is reported by the livecheck step below and fixed by the daily
+      # update workflow. livecheck_https_availability is excluded too, because it
+      # repeats the version check when the livecheck URL already uses HTTPS.
       - name: Audit casks and verify downloads
         if: steps.packages.outputs.casks != '0'
-        run: brew audit --cask --strict --online --except=livecheck_version --tap cravingmaker/tap
+        run: brew audit --cask --strict --online --except=livecheck_version,livecheck_https_availability --tap cravingmaker/tap
       - name: Audit formulae
         if: steps.packages.outputs.formulae != '0'
         run: brew audit --formula --strict --online --tap cravingmaker/tap

@@ -18,8 +18,8 @@ brew install --cask cravingmaker/tap/ajaib-terminal
 
 [Ajaib Terminal](https://ajaib.co.id/terminal) requires macOS 12 Monterey or later
 and supports Intel and Apple Silicon. The cask downloads a versioned archive from
-the app's official update service and verifies its SHA-256. Its app bundle is
-identical to the official DMG's bundle for version 1.8.2.
+the app's official update service and verifies its SHA-256. When the cask was
+added at version 1.8.2, its app bundle was identical to the official DMG's bundle.
 
 The app has a built-in updater. To check the latest vendor release with Homebrew:
 
@@ -27,7 +27,8 @@ The app has a built-in updater. To check the latest vendor release with Homebrew
 brew livecheck --cask cravingmaker/tap/ajaib-terminal
 ```
 
-Livecheck reports new versions; it does not update the cask automatically.
+A daily workflow runs livecheck and, when a new release appears, opens a pull
+request that updates the version and checksum. Updates are merged after review.
 Homebrew skips self-updating apps during ordinary upgrades; use
 `brew upgrade --cask --greedy cravingmaker/tap/ajaib-terminal` to include this app.
 
@@ -58,5 +59,6 @@ cask "stockbit"
 
 Add casks under `Casks/` and formulae under `Formula/`. CI validates the migration
 map and runs Homebrew style, online audits, and livecheck when packages are present.
-Stockbit's update and installation workflows have been retired; its maintenance
-now belongs to Homebrew Cask.
+A newer upstream version is reported but doesn't fail CI; the daily `Update casks`
+workflow opens a pull request for it instead. To automate another cask, add it to
+that workflow's matrix. Stockbit's maintenance now belongs to Homebrew Cask.
