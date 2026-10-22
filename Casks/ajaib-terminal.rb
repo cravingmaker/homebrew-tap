@@ -1,6 +1,6 @@
 cask "ajaib-terminal" do
-  version "1.8.2"
-  sha256 "1a791d28737fccbd979cdf508861e013ed285fdd101a8c89827b38b4b9b1fbb7"
+  version "1.12.0"
+  sha256 "da852fcac140602e8a1d227cb5b93b8232050205c13feb769f642559effcdb82"
 
   url "https://storage.googleapis.com/storage-ajaib-prd-platform-desktop/releases/v#{version}/Ajaib%20Terminal.app.tar.gz"
   name "Ajaib Terminal"
